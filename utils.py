@@ -1,10 +1,11 @@
-import time
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 async def max_retry(function, **kwargs):
     for _ in range(3):
         try:
             res = await function(**kwargs) if kwargs else await function()
             if res: break
         
+        except PlaywrightTimeoutError: continue
         except TimeoutError: continue
 
     if not res: raise AssertionError(f"{function} occurs error!")

@@ -122,13 +122,14 @@ class Usaint():
 
         #현재 로딩된 년도와 쿼리한 년도가 다른 경우
         if year != YEAR:
-            if await self.click_button(year_drop_selector) and await self.click_button(year_selector):
+            if await utils.max_retry(self.click_button, selector=year_drop_selector) and await utils.max_retry(self.click_button, selector=year_selector):
                 await self.wait_content_table() #페이지 테이블 로딩을 대기
             else:
                 return False
 
         if semester != SEMESTER:
-            if await self.click_button(semester_drop_selector) and await self.click_button(semester_selector):
+            # if await self.click_button(semester_drop_selector) and await self.click_button(semester_selector):
+            if await utils.max_retry(self.click_button, selector=semester_drop_selector) and await utils.max_retry(self.click_button, selector=semester_selector):
                 await self.wait_content_table() #페이지 테이블 로딩을 대기
             else:
                 return False
