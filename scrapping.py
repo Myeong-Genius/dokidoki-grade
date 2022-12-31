@@ -27,7 +27,7 @@ class Usaint():
     async def create_default_browser(self):
         try:
             self.playwright = await async_playwright().start()
-            self.browser = await self.playwright.chromium.launch(
+            self.browser = await self.playwright.chromium.launch(headless=False,
                 args=[
                     '--headless', #백그라운드에서 실행
                     '--disable-gpu',#GPU 활용 하지 않음
@@ -63,11 +63,13 @@ class Usaint():
         로그인 쿠키가 추가된 브라우저로 성적 페이지를 로딩한다.
         """
         await self.set_context_cookies()
-        goto_res = await utils.max_retry(self.page.goto, url=URL, timeout=3000)
-
+        try:
+            await utils.max_retry(self.page.goto, url=URL, timeout=3000)
+            return True #로딩이 완료됨.
         #goto에 실패하면 assertion 에러 발생
-        assert goto_res, "Page Load Failed"
-        return True #로딩이 완료됨.
+        
+        except Exception:
+            return False
 
 
     async def click_button(self, selector:str):
@@ -120,21 +122,24 @@ class Usaint():
         semester_drop_selector = 'input[role="combobox"][value$="학기"]'
         semester_selector = f'div[class~="lsListbox__value"][data-itemkey="09{semester}"]'
 
-        #현재 로딩된 년도와 쿼리한 년도가 다른 경우
-        if year != YEAR:
-            if await utils.max_retry(self.click_button, selector=year_drop_selector) and await utils.max_retry(self.click_button, selector=year_selector):
+        async def select_parameter(drop_selector:str, element_selector:str):
+            if await utils.max_retry(self.click_button, selector=drop_selector) and await utils.max_retry(self.click_button, selector=element_selector):
                 await self.wait_content_table() #페이지 테이블 로딩을 대기
+                return True #클릭이 정상적으로 완료됨.
+
             else:
                 return False
+
+        #현재 로딩된 년도와 쿼리한 년도가 다른 경우
+        year_res, semester_res = True, True
+        
+        if year != YEAR:
+            year_res = await select_parameter(year_drop_selector, year_selector)
 
         if semester != SEMESTER:
-            # if await self.click_button(semester_drop_selector) and await self.click_button(semester_selector):
-            if await utils.max_retry(self.click_button, selector=semester_drop_selector) and await utils.max_retry(self.click_button, selector=semester_selector):
-                await self.wait_content_table() #페이지 테이블 로딩을 대기
-            else:
-                return False
+            semester_res = await select_parameter(semester_drop_selector, semester_selector)
 
-        return True #클릭이 정상적으로 완료됨.
+        return year_res and semester_res
 
 
     async def get_inner_texts(self):
@@ -181,12 +186,6 @@ class Usaint():
                     inner_texts = await utils.max_retry(self.get_inner_texts) #성적 테이블의 텍스트를 추출합니다.
                     res = utils.parse_grade(inner_texts) #텍스트를 JSON형식의 딕셔너리로 파싱합니다.
 
-        except AssertionError as e:
-            self.logger.error(e)
-
-        except TimeoutError as e:
-            self.logger.error(e)
-        
         except Exception as e:
             self.logger.error(e)
             
@@ -200,11 +199,11 @@ class Usaint():
         await self.browser.close()
 
 
-# if __name__ == '__main__':
-#     import asyncio
-#     from user import *
-#     my_saint = Usaint(USER_ID, PASSWORD)
-#     res = asyncio.run(my_saint.run(2022, 2))
-#     print(res)
+from user import *
+if __name__ == '__main__':
+    import asyncio
+    my_saint = Usaint(USER_ID, PASSWORD)
+    res = asyncio.run(my_saint.run(2022, 2))
+    print(res)
 
 

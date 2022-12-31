@@ -5,8 +5,8 @@ async def max_retry(function, **kwargs):
             res = await function(**kwargs) if kwargs else await function()
             if res: break
         
-        except PlaywrightTimeoutError: continue
-        except TimeoutError: continue
+        except PlaywrightTimeoutError: 
+            continue
 
     if not res: raise AssertionError(f"{function} occurs error!")
     return res
