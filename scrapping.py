@@ -199,11 +199,11 @@ class Usaint():
         await self.browser.close()
 
 
-from user import *
-if __name__ == '__main__':
-    import asyncio
-    my_saint = Usaint(USER_ID, PASSWORD)
-    res = asyncio.run(my_saint.run(2022, 2))
-    print(res)
+# from user import *
+# if __name__ == '__main__':
+#     import asyncio
+#     my_saint = Usaint(USER_ID, PASSWORD)
+#     res = asyncio.run(my_saint.run(2022, 2))
+#     print(res)
 
 

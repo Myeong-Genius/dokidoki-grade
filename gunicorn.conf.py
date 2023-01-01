@@ -1,10 +1,10 @@
-max_requests = 100
-max_requests_jitter = 50
+max_requests = 30
+max_requests_jitter = 30
 bind = '127.0.0.1:8000'
 log_file = "gunicorn-access.log"
+worker_connections = 5
 workers = 3
 threads = 3
-timeout = 120
 worker_class = 'uvicorn.workers.UvicornWorker'
 
 # gunicorn -k uvicorn.workers.UvicornWorker --access-logfile ./gunicorn-access.log main:app --bind 0.0.0.0:8000 --workers 3
