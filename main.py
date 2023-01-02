@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
@@ -33,10 +34,12 @@ async def root(user:User, year:str=2022, semester:str=2):
     try:
         my_saint = Usaint(user.student_id, user.password)
         data = await my_saint.run(year, semester)
-        return JSONResponse(content=data, status_code=200)
+        json_data = json.dumps(str(data), ensure_ascii=False)
+        return JSONResponse(content=json_data, status_code=200)
 
     except Exception:
-        raise HTTPException(status_code=500, detail="Erorr Occurs in Scrapping Server")
+        json_data = json.dumps(data, ensure_ascii=False)
+        raise HTTPException(status_code=500, detail=json_data)
 
 
 @app.post("/login", status_code=200)

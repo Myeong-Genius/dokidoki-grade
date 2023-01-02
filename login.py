@@ -1,5 +1,6 @@
 from constant import *
 import requests
+import utils
 
 def get_payload(student_id:str, password:str):
     payload = PAYLOAD.copy()
@@ -10,7 +11,7 @@ def get_payload(student_id:str, password:str):
 
 async def get_login_cookie(student_id:str, password:str):
     payload = get_payload(student_id, password)
-    login_res = requests.post(URL, data=payload, allow_redirects=False, timeout=3)
+    login_res = requests.post(URL, data=payload, allow_redirects=False)
     login_cookies = login_res.cookies
     if 'MYSAPSSO2' not in login_cookies.keys():
         raise AssertionError("Wrong ID or Password") #401에러 등의 응답 메시지 줘야 할듯

@@ -1,15 +1,30 @@
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
-async def max_retry(function, **kwargs):
-    for _ in range(3):
-        try:
-            res = await function(**kwargs) if kwargs else await function()
-            if res: break
-        
-        except PlaywrightTimeoutError: 
-            continue
+from functools import wraps
+import time
+import logger
 
-    if not res: raise AssertionError(f"{function} occurs error!")
-    return res
+def retry(function):
+    RETRIES_LIMIT = 3
+    loger_ = logger.create_logger()
+    @wraps(function)
+    async def wraaped(self, **kwargs):
+        for _ in range(RETRIES_LIMIT):
+            try:
+                return await function(self, **kwargs) if kwargs else await function(self)
+            
+            except PlaywrightTimeoutError: #element를 못찾는 경우
+                loger_.warn((f"Retry function: {function}"))
+                if 'timeout' in kwargs:
+                    kwargs['timeout'] += 2000
+                continue
+
+            except AssertionError:
+                continue
+        
+        #최대 반복횟수를 도달했지만 함수가 반환이 안되면 예외이다.
+        raise Exception(f"{function} occurs error!")
+
+    return wraaped
 
 
 def parse_grade(inner_texts:str):
