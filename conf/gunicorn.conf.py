@@ -1,7 +1,7 @@
 max_requests = 30
 max_requests_jitter = 30
 bind = '127.0.0.1:8000'
-log_file = "gunicorn-access.log"
+deamon = True
 worker_connections = 5
 workers = 3
 threads = 3
